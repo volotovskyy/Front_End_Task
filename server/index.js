@@ -11,22 +11,22 @@ server.listen(webSocketsServerPort, () => {
 
 const wss = new WebSocketServer({ server });
 
-const pb = new PocketBase("http://127.0.0.1:8090"); // Adjust to your PocketBase URL
+const pb = new PocketBase("http://127.0.0.1:8090");
 
-const connectedUsers = new Map(); // Use a Map to store connections by UUID
+const connectedUsers = new Map();
 
-wss.on("connection", function (ws, req) {
-  const userId = uuidv4(); // Generate a new UUID for the user
+wss.on("connection", function (ws) {
+  const userId = uuidv4();
 
   connectedUsers.set(userId, ws);
   console.log("Connection established: " + userId);
 
-  // Send the user their UUID
   ws.send(JSON.stringify({ type: "uuid", userId }));
 
   ws.on("message", async function (message) {
     try {
       const data = JSON.parse(message);
+
       console.log("server::data", data);
 
       if (data.type === "message") {
@@ -36,8 +36,6 @@ wss.on("connection", function (ws, req) {
           userId: userId,
           reactions: [],
         };
-
-        console.log("server::newMessage", newMessage);
 
         let storedMessage;
         try {
@@ -52,7 +50,6 @@ wss.on("connection", function (ws, req) {
           ...newMessage,
           id: storedMessage.id,
         };
-        console.log("server::processedMessage", processedMessage);
 
         // Broadcast the message to all connected users
         for (const [id, userConnection] of connectedUsers) {
@@ -60,16 +57,13 @@ wss.on("connection", function (ws, req) {
             type: "message",
             message: processedMessage,
           });
-          console.log("server::broadcast--message--", messageToBeBroadcasted);
           userConnection.send(messageToBeBroadcasted);
-          console.log("server::broadcast--send to--: ", id);
         }
       }
 
       if (data.type === "reaction") {
         const messageId = data.id;
         const reactions = data.reactions;
-        console.log("server::newReaction", { messageId, reactions });
 
         let message;
         try {
@@ -80,12 +74,9 @@ wss.on("connection", function (ws, req) {
         }
 
         if (message) {
-          // const updatedReactions = message.reactions || [];
-
           const updatedMessage = {
             ...message,
             reactions: [...reactions],
-            // reactions: [...updatedReactions, ...reactions],
           };
 
           let result;
@@ -101,7 +92,6 @@ wss.on("connection", function (ws, req) {
 
           const processedUpdatedMessage = {
             ...updatedMessage,
-            // id: messageId,
           };
 
           // Broadcast the updated message to all connected users
@@ -110,9 +100,7 @@ wss.on("connection", function (ws, req) {
               type: "message",
               message: processedUpdatedMessage,
             });
-            console.log("server::broadcast--message--", messageToBeBroadcasted);
             userConnection.send(messageToBeBroadcasted);
-            console.log("server::broadcast--send to--: ", id);
           }
         }
       }

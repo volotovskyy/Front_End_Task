@@ -34,18 +34,6 @@ export const SlackSelector = forwardRef(
   },
 );
 
-// const menuStyle = {
-//   fontFamily: '"Helvetica Neue",Helvetica,"Segoe UI",Tahoma,Arial,sans-serif',
-//   width: "358px",
-//   color: "#555459",
-//   fontSize: ".95rem",
-//   background: "#f7f7f7",
-//   lineHeight: "1rem",
-//   boxShadow: "0 5px 10px rgba(0,0,0,.12)",
-//   borderRadius: "6px",
-//   border: "1px solid rgba(0,0,0,.15)",
-// };
-
 export const defaultProps = {
   scrollHeight: "270px",
   removeEmojis: [

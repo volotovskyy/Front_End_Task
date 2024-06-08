@@ -1,12 +1,3 @@
-// import { SlackCounter } from "./SlackCounter";
-// import { SlackCounterGroup } from "./SlackCounterGroup";
-// import { SlackSelector } from "./SlackSelector";
-// import { SlackSelectorFooter } from "./SlackSelectorFooter";
-// import { SlackSelectorHeader } from "./SlackSelectorHeader";
-// import { SlackSelectorHeaderTab } from "./SlackSelectorHeaderTab";
-// import { SlackSelectorItems } from "./SlackSelectorItems";
-// import { SlackSelectorSection } from "./SlackSelectorSection";
-// import { SlackSelectorSectionEmoji } from "./SlackSelectorSectionEmoji";
 export { SlackCSS } from "./SlackCSS";
 export { SlackCounter } from "./SlackCounter";
 export { SlackCounterGroup } from "./SlackCounterGroup";
