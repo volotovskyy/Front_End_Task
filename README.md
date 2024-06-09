@@ -36,3 +36,18 @@ Now to finish your adventure you have to complete this task.
 You may use any existing library as well as change anything you want in provided sandbox.
 
 We are looking forward to hearing from you and discuss your solution together.
+
+---
+
+## Notes:
+
+1. Prevent multiple logins from 1 client. For 2 users pleas use 2 different browsers or normal and incognito mode for each user.
+2. Additional step before running server is to run [PocketBase](https://pocketbase.io/). You may need Go. To start it go to /server and run `./pocketbase serve`
+3. Server was refactored from csj to esm which means you may need an up to date node.js to run everyhing smoothly.
+
+### Features:
+
+- Registration & Login
+- Multiple reactions
+- Increment existing reaction count
+- Remove your own reaction
