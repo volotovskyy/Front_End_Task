@@ -1,10 +1,10 @@
 import { WebSocketServer } from "ws";
 import http from "http";
-import { v4 as uuidv4 } from "uuid";
 import PocketBase from "pocketbase";
 
 const webSocketsServerPort = 8000;
 const server = http.createServer();
+
 server.listen(webSocketsServerPort, () => {
   console.log("Listening on port 8000....");
 });
@@ -15,19 +15,39 @@ const pb = new PocketBase("http://127.0.0.1:8090");
 
 const connectedUsers = new Map();
 
-wss.on("connection", function (ws) {
-  const userId = uuidv4();
-
-  connectedUsers.set(userId, ws);
-  console.log("Connection established: " + userId);
-
-  ws.send(JSON.stringify({ type: "uuid", userId }));
-
+wss.on("connection", function (ws, req) {
   ws.on("message", async function (message) {
     try {
       const data = JSON.parse(message);
-
       console.log("server::data", data);
+
+      if (data.type === "auth") {
+        const { token } = data;
+        try {
+          pb.authStore.save(token);
+          const authData = await pb.collection("users").authRefresh();
+          console.log("server::authData", authData);
+
+          const userId = pb.authStore.model.id;
+          connectedUsers.set(userId, ws);
+          ws.send(JSON.stringify({ type: "auth-success", userId }));
+          console.log("Authenticated user:", userId);
+        } catch (e) {
+          console.error("Token authentication failed:", e);
+          ws.send(
+            JSON.stringify({ type: "auth-failure", message: "Invalid token" }),
+          );
+        }
+        return;
+      }
+
+      const userId = data.userId;
+      if (!connectedUsers.has(userId)) {
+        ws.send(
+          JSON.stringify({ type: "error", message: "User not authenticated" }),
+        );
+        return;
+      }
 
       if (data.type === "message") {
         const newMessage = {
@@ -51,7 +71,6 @@ wss.on("connection", function (ws) {
           id: storedMessage.id,
         };
 
-        // Broadcast the message to all connected users
         for (const [id, userConnection] of connectedUsers) {
           const messageToBeBroadcasted = JSON.stringify({
             type: "message",
@@ -94,7 +113,6 @@ wss.on("connection", function (ws) {
             ...updatedMessage,
           };
 
-          // Broadcast the updated message to all connected users
           for (const [id, userConnection] of connectedUsers) {
             const messageToBeBroadcasted = JSON.stringify({
               type: "message",
@@ -110,7 +128,11 @@ wss.on("connection", function (ws) {
   });
 
   ws.on("close", function () {
-    connectedUsers.delete(userId);
-    console.log("Connection closed: " + userId);
+    connectedUsers.forEach((connection, userId) => {
+      if (connection === ws) {
+        connectedUsers.delete(userId);
+        console.log("Connection closed for user:", userId);
+      }
+    });
   });
 });
